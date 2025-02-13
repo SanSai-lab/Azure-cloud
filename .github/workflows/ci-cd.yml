@@ -68,6 +68,6 @@ jobs:
       - name: Update FluxCD HelmRelease
         run: |
           cd poc-flux-repo
-          yq eval -i '.spec.values.image.tag = "${{ env.IMAGE_TAG }}"' ./clusters/${{ env.NAMESPACE }}/AzureKeyVault-E2E/helmrelease.yaml
+          yq eval -i '.spec.values.image.tag = "${{ env.IMAGE_TAG }}"' ./clusters/${{ env.NAMESPACE }}/azure-keyvault-e2e/helmrelease.yaml
           git commit -am "Update image tag for azure-keyvault-e2e to ${{ env.IMAGE_TAG }}"
           git push origin main
