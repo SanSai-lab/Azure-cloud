@@ -46,15 +46,6 @@ jobs:
               ;;
           esac
 
-      - name: Debug Secrets (DO NOT USE IN PRODUCTION)
-        run: |
-          echo "ACR_NAME=${{ secrets.ACR_NAME }}"
-          echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}"
-          echo "AZURE_CLIENT_SECRET Length=${#AZURE_CLIENT_SECRET}"  # Shows length to confirm existence
-          echo "TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
-        env:
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }} # Prevents secrets from being exposed
-
       - name: Docker Login to ACR
         run: echo ${{ secrets.AZURE_CLIENT_SECRET }} | docker login ${{ secrets.ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} --password-stdin
         env:
@@ -65,9 +56,13 @@ jobs:
           docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/azure-keyvault-e2e:${{ env.IMAGE_TAG }} .
           docker push ${{ secrets.ACR_NAME }}.azurecr.io/azure-keyvault-e2e:${{ env.IMAGE_TAG }}
 
+      - name: Clone FluxCD Repo
+        run: git clone https://${{ secrets.GH_PAT }}@github.com/YOUR_ORG/poc-flux-repo.git
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+
       - name: Update FluxCD HelmRelease
         run: |
-          git clone https://${{ secrets.GH_PAT }}@github.com/YOUR_ORG/poc-flux-repo.git
           cd poc-flux-repo
           yq eval -i '.spec.values.image.tag = "${{ env.IMAGE_TAG }}"' ./clusters/${{ env.NAMESPACE }}/AzureKeyVault-E2E/helmrelease.yaml
           git config --global user.email "actions@github.com"
