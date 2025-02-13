@@ -46,8 +46,19 @@ jobs:
               ;;
           esac
 
+      - name: Debug Secrets (DO NOT USE IN PRODUCTION)
+        run: |
+          echo "ACR_NAME=${{ secrets.ACR_NAME }}"
+          echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}"
+          echo "AZURE_CLIENT_SECRET Length=${#AZURE_CLIENT_SECRET}"  # Shows length to confirm existence
+          echo "TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
+        env:
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }} # Prevents secrets from being exposed
+
       - name: Docker Login to ACR
         run: echo ${{ secrets.AZURE_CLIENT_SECRET }} | docker login ${{ secrets.ACR_NAME }}.azurecr.io -u ${{ secrets.AZURE_CLIENT_ID }} --password-stdin
+        env:
+          ACR_NAME: ${{ secrets.ACR_NAME }}
 
       - name: Build and Push Docker Image
         run: |
